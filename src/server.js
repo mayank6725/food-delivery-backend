@@ -4,25 +4,30 @@ const connectDB = require('./config/db');
 const typeDefs = require('./schemas/schema');
 const resolvers = require('./resolvers/resolvers');
 require('dotenv').config();
-const jwt = require('jsonwebtoken')
-const User = require('./models/User')
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');
+
 const startServer = async () => {
   const app = express();
+
+  // Add a basic ping route
+  app.get('/ping', (req, res) => {
+    res.send('Server is active');
+  });
 
   const server = new ApolloServer({
     typeDefs,
     resolvers,
     context: async ({ req, res }) => {
-      const auth = req ? req.headers.authorization : null
-      console.log('auth', auth)
+      const auth = req ? req.headers.authorization : null;
+      console.log('auth', auth);
       if (auth && auth.startsWith('Bearer ')) {
         const decodedToken = jwt.verify(
           auth.substring(7), process.env.JWT_SECRET
-        )
-        const currentUser = await User
-          .findById(decodedToken.id)
+        );
+        const currentUser = await User.findById(decodedToken.id);
         console.log('currentUser', currentUser);
-        return { currentUser }
+        return { currentUser };
       }
     }
   });
